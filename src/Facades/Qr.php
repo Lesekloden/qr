@@ -7,6 +7,8 @@ namespace Lesekloden\Qr\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @method static \Lesekloden\Qr\QrCodeGenerationResult generateAll()
+ *
  * @see \Lesekloden\Qr\Qr
  */
 class Qr extends Facade
