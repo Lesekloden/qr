@@ -32,20 +32,31 @@ class QrCodeGenerator
         $paths = Arr::wrap($this->configuration->get('qr.paths', []));
         $logoPath = $this->resolveLogoPath($this->configuration->get('qr.logo'));
         $disk = (string) $this->configuration->get('qr.disk', 'public');
-        $directory = trim((string) $this->configuration->get('qr.directory', 'qr'), '/');
+        $directory = trim((string) $this->configuration->get('qr.output_directory', 'qr'), '/');
         $format = strtolower((string) $this->configuration->get('qr.format', 'png'));
 
         if ($format !== 'png') {
             throw new RuntimeException('Only the png format is supported.');
         }
 
-        $forcedVersion = $this->qrVersionResolver->resolve($paths);
-        $generatedFiles = [];
+        $urls = [];
         $failures = [];
 
         foreach ($paths as $path) {
-            $url = is_string($path) ? trim($path) : '';
+            try {
+                $urls[] = $this->resolveUrl($path);
+            } catch (Throwable $throwable) {
+                $failures[] = [
+                    'url' => is_string($path) ? trim($path) : '',
+                    'message' => $throwable->getMessage(),
+                ];
+            }
+        }
 
+        $forcedVersion = $this->qrVersionResolver->resolve($urls);
+        $generatedFiles = [];
+
+        foreach ($urls as $url) {
             if (! filter_var($url, FILTER_VALIDATE_URL)) {
                 $failures[] = [
                     'url' => $url,
@@ -83,11 +94,44 @@ class QrCodeGenerator
         return new QrCodeGenerationResult($generatedFiles, $failures);
     }
 
+    private function resolveUrl(mixed $path): string
+    {
+        if (is_array($path)) {
+            if (isset($path['route'])) {
+                return route($path['route'], $path['parameters'] ?? []);
+            }
+
+            $path = $path['path'] ?? '';
+        }
+
+        if (! is_string($path)) {
+            return '';
+        }
+
+        $path = trim($path);
+
+        if (str_starts_with($path, 'route:')) {
+            return route(substr($path, 6));
+        }
+
+        if (str_starts_with($path, '/')) {
+            $baseUrl = rtrim((string) $this->configuration->get('app.url', ''), '/');
+
+            if (! filter_var($baseUrl, FILTER_VALIDATE_URL)) {
+                throw new RuntimeException('Set a valid APP_URL before generating QR codes.');
+            }
+
+            return $baseUrl.'/'.ltrim($path, '/');
+        }
+
+        return $path;
+    }
+
     private function generatePngContents(string $url, ?string $logoPath, ?int $forcedVersion): string
     {
-        $logoWidth = (int) $this->configuration->get('qr.logo_width', 75);
+        $logoWidth = (int) $this->configuration->get('qr.logo_width', 118);
         $margin = 10;
-        $outerSize = max((int) $this->configuration->get('qr.size', 320), 21);
+        $outerSize = max((int) $this->configuration->get('qr.size', 512), 21);
         $innerSize = max($outerSize - ($margin * 2), 1);
 
         $qrCode = new QrCode(

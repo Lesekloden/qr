@@ -10,7 +10,7 @@ use Throwable;
 
 class GenerateQrCodesCommand extends Command
 {
-    protected $signature = 'qr:generate';
+    protected $signature = 'generate:qrs';
 
     protected $description = 'Generate QR codes for the configured URLs.';
 

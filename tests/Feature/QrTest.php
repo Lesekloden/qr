@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Lesekloden\Qr\Facades\Qr;
 use Lesekloden\Qr\QrCodeGenerator;
@@ -14,17 +15,18 @@ beforeEach(function () {
 });
 
 it('merges defaults and allows host configuration overrides', function () {
-    expect(config('qr.size'))->toBe(320)
+    expect(config('qr.size'))->toBe(512)
+        ->and(config('qr.logo_width'))->toBe(118)
         ->and(config('qr.logo'))->toBeNull()
         ->and(config('qr.paths'))->toBe([]);
 
-    config(['qr.size' => 512]);
-    expect(config('qr.size'))->toBe(512);
+    config(['qr.size' => 640]);
+    expect(config('qr.size'))->toBe(640);
 });
 
 it('generates PNGs through the facade on the configured disk and directory', function () {
     Storage::fake('qr-output');
-    config(['qr.paths' => ['https://example.com/books'], 'qr.disk' => 'qr-output', 'qr.directory' => '/codes/']);
+    config(['qr.paths' => ['https://example.com/books'], 'qr.disk' => 'qr-output', 'qr.output_directory' => '/codes/']);
 
     $result = Qr::generateAll();
 
@@ -37,7 +39,7 @@ it('generates PNGs through the facade on the configured disk and directory', fun
 it('reports invalid URLs while generating the valid entries', function () {
     config(['qr.paths' => ['not-a-url', null, ' https://example.com/books ']]);
 
-    $this->artisan('qr:generate')
+    $this->artisan('generate:qrs')
         ->expectsOutputToContain('Generated: 1. Failed: 2.')
         ->assertFailed();
 
@@ -45,14 +47,14 @@ it('reports invalid URLs while generating the valid entries', function () {
 });
 
 it('handles an empty URL list', function () {
-    $this->artisan('qr:generate')
+    $this->artisan('generate:qrs')
         ->expectsOutputToContain('Generated: 0. Failed: 0.')
         ->assertSuccessful();
 });
 
 it('rejects unsupported output formats', function () {
     config(['qr.format' => 'svg']);
-    $this->artisan('qr:generate')
+    $this->artisan('generate:qrs')
         ->expectsOutputToContain('Only the png format is supported.')
         ->assertFailed();
 });
@@ -80,3 +82,20 @@ it('uses path-based sanitized filenames', function (string $url, string $filenam
     ['https://example.com/Books//New-Releases/?edition=2', 'books-new-releases'],
     ['https://example.com/!!!', 'home'],
 ]);
+
+it('resolves application paths and named routes before generating QR codes', function () {
+    config(['app.url' => 'https://example.test', 'qr.paths' => ['/about', 'route:books', ['route' => 'book', 'parameters' => ['id' => 7]]]]);
+    Route::get('/books', fn () => '')->name('books');
+    Route::get('/books/{id}', fn () => '')->name('book');
+    Route::getRoutes()->refreshNameLookups();
+
+    $result = Qr::generateAll();
+    expect($result->failures)->toBe([])
+        ->and(array_column($result->generatedFiles, 'url'))->toBe(['https://example.test/about', route('books'), route('book', ['id' => 7])]);
+    Storage::disk('public')->assertExists(['qr/about.png', 'qr/books.png', 'qr/books-7.png']);
+});
+
+it('reports missing named routes as generation failures', function () {
+    config(['qr.paths' => ['route:missing-route']]);
+    $this->artisan('generate:qrs')->expectsOutputToContain('Generated: 0. Failed: 1.')->assertFailed();
+});

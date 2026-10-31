@@ -48,7 +48,7 @@ class GenerateQrCodesCommandTest extends TestCase
             'https://mypage.com/store/books',
         ]);
 
-        $this->artisan('qr:generate')
+        $this->artisan('generate:qrs')
             ->expectsOutputToContain('Generated [qr/about.png]')
             ->expectsOutputToContain('Generated [qr/store.png]')
             ->expectsOutputToContain('Generated [qr/home.png]')
@@ -73,7 +73,7 @@ class GenerateQrCodesCommandTest extends TestCase
         Config::set('qr.logo', $logoPath);
         Config::set('qr.logo_width', 75);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         $this->assertFileExists($outputRoot.'/qr/about.png');
         $this->assertNotEmpty(File::get($outputRoot.'/qr/about.png'));
@@ -84,7 +84,7 @@ class GenerateQrCodesCommandTest extends TestCase
         Config::set('qr.paths', ['https://mypage.com/about']);
         Config::set('qr.logo', storage_path('framework/testing/missing-logo.png'));
 
-        $this->artisan('qr:generate')
+        $this->artisan('generate:qrs')
             ->expectsOutputToContain('could not be read')
             ->assertExitCode(1);
     }
@@ -99,7 +99,7 @@ class GenerateQrCodesCommandTest extends TestCase
         Config::set('filesystems.disks.public.root', $outputRoot);
         Config::set('qr.paths', ['https://mypage.com/about?version=first']);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         $firstContents = File::get($outputRoot.'/qr/about.png');
 
@@ -108,7 +108,7 @@ class GenerateQrCodesCommandTest extends TestCase
             'https://mypage.com/about?version=second',
         ]);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         $secondContents = File::get($outputRoot.'/qr/about.png');
 
@@ -129,13 +129,13 @@ class GenerateQrCodesCommandTest extends TestCase
         Config::set('qr.logo', $logoPath);
         Config::set('qr.logo_width', 40);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         $smallLogoQrCode = File::get($outputRoot.'/qr/about.png');
 
         Config::set('qr.logo_width', 90);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         $largeLogoQrCode = File::get($outputRoot.'/qr/about.png');
 
@@ -172,7 +172,7 @@ class GenerateQrCodesCommandTest extends TestCase
         Config::set('qr.paths', ['https://mypage.com/about']);
         Config::set('qr.size', 360);
 
-        $this->artisan('qr:generate')->assertExitCode(0);
+        $this->artisan('generate:qrs')->assertExitCode(0);
 
         [$width, $height] = getimagesize($outputRoot.'/qr/about.png');
 

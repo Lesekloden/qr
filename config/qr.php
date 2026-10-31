@@ -5,6 +5,26 @@ declare(strict_types=1);
 return [
     /*
     |--------------------------------------------------------------------------
+    | QR Paths
+    |--------------------------------------------------------------------------
+    |
+    | URLs, application paths, or "route:name" entries. Arrays may contain
+    | a route and parameters, or a path. One PNG file will be
+    | generated for each URL.
+    |
+    | Example:
+    | [
+    |     'https://lesekloden.no/om',
+    |     '/kaffe',
+    |     'route:home',
+    |     ['route' => 'books.show', 'parameters' => ['book' => 1]],
+    | ]
+    |
+    */
+    'paths' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | QR Logo
     |--------------------------------------------------------------------------
     |
@@ -26,10 +46,10 @@ return [
     | Increase this if you want the logo to appear slightly larger.
     |
     | Example:
-    | 75
+    | 118
     |
     */
-    'logo_width' => 75,
+    'logo_width' => 118,
 
     /*
     |--------------------------------------------------------------------------
@@ -37,10 +57,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | Final width and height, in pixels, for each generated QR image. The
-    | default value of 320 produces 320x320 PNG files.
+    | default value of 512 produces 512x512 PNG files.
     |
     */
-    'size' => 320,
+    'size' => 512,
 
     /*
     |--------------------------------------------------------------------------
@@ -53,23 +73,6 @@ return [
     |
     */
     'uniform_matrix' => true,
-
-    /*
-    |--------------------------------------------------------------------------
-    | QR Paths
-    |--------------------------------------------------------------------------
-    |
-    | Full URLs that should be converted into QR codes. One PNG file will be
-    | generated for each URL.
-    |
-    | Example:
-    | [
-    |     'https://lesekloden.no/om',
-    |     'https://lesekloden.no/kaffe',
-    | ]
-    |
-    */
-    'paths' => [],
 
     /*
     |--------------------------------------------------------------------------
@@ -99,7 +102,7 @@ return [
     | storage/app/public/qr/kaffe.png
     |
     */
-    'directory' => 'qr',
+    'output_directory' => 'qr',
 
     /*
     |--------------------------------------------------------------------------
