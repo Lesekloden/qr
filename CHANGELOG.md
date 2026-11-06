@@ -1,8 +1,7 @@
-# Release Notes
+# Changelog
 
-## [Unreleased](https://github.com/lesekloden/lesekloden-qr/compare/v0.1.0...1.x)
+## [1.0.0](https://github.com/Lesekloden/qr/releases/tag/v1.0.0) (2026-11-06)
 
-
-## [v0.1.0](https://github.com/lesekloden/lesekloden-qr/compare/...v0.1.0) - 202x-xx-xx
-
-Initial pre-release.
+- Initial stable release.
+- Generate branded PNG QR codes from URLs, application paths, and named routes.
+- Laravel 12 and 13 support on PHP 8.3 or later.

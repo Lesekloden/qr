@@ -44,10 +44,10 @@ class UniformPngWriter
 
         $foregroundColor = imagecolorallocatealpha(
             $baseImage,
-            $qrCode->getForegroundColor()->getRed(),
-            $qrCode->getForegroundColor()->getGreen(),
-            $qrCode->getForegroundColor()->getBlue(),
-            $qrCode->getForegroundColor()->getAlpha(),
+            min(255, max(0, $qrCode->getForegroundColor()->getRed())),
+            min(255, max(0, $qrCode->getForegroundColor()->getGreen())),
+            min(255, max(0, $qrCode->getForegroundColor()->getBlue())),
+            min(127, max(0, $qrCode->getForegroundColor()->getAlpha())),
         );
 
         if ($foregroundColor === false) {
@@ -85,10 +85,10 @@ class UniformPngWriter
 
         $backgroundColor = imagecolorallocatealpha(
             $targetImage,
-            $qrCode->getBackgroundColor()->getRed(),
-            $qrCode->getBackgroundColor()->getGreen(),
-            $qrCode->getBackgroundColor()->getBlue(),
-            $qrCode->getBackgroundColor()->getAlpha(),
+            min(255, max(0, $qrCode->getBackgroundColor()->getRed())),
+            min(255, max(0, $qrCode->getBackgroundColor()->getGreen())),
+            min(255, max(0, $qrCode->getBackgroundColor()->getBlue())),
+            min(127, max(0, $qrCode->getBackgroundColor()->getAlpha())),
         );
 
         if ($backgroundColor === false) {
