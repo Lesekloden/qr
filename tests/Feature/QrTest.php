@@ -99,3 +99,14 @@ it('reports missing named routes as generation failures', function () {
     config(['qr.paths' => ['route:missing-route']]);
     $this->artisan('generate:qrs')->expectsOutputToContain('Generated: 0. Failed: 1.')->assertFailed();
 });
+
+it('preserves absolute Windows logo paths when reporting unreadable files', function (string $path) {
+    config(['qr.logo' => $path]);
+
+    expect(fn () => app(QrCodeGenerator::class)->generateAll())
+        ->toThrow(RuntimeException::class, "The logo file [{$path}] could not be read.");
+})->with([
+    'drive with backslashes' => ['Z:\\lesekloden-missing\\logo.png'],
+    'drive with slashes' => ['Z:/lesekloden-missing/logo.png'],
+    'network share' => ['\\\\lesekloden-missing\\share\\logo.png'],
+]);

@@ -12,7 +12,6 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Filesystem\Factory as FilesystemFactory;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Lesekloden\Qr\Support\UniformPngWriter;
 use RuntimeException;
 use Throwable;
@@ -162,7 +161,7 @@ class QrCodeGenerator
 
         $logoPath = trim($configuredPath);
 
-        if (! Str::startsWith($logoPath, DIRECTORY_SEPARATOR)) {
+        if (preg_match('~^(?:[A-Za-z]:)?/~', str_replace('\\', '/', $logoPath)) !== 1) {
             $logoPath = base_path($logoPath);
         }
 
